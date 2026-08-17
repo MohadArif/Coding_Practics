@@ -138,6 +138,10 @@ public class Example1 {
 //🔥 Advanced Interview Questions
 //
 //        Q21. Find the second-highest-paid person in the entire list.
+
+          persons.stream().sorted(Comparator.comparingDouble(Person::salary).reversed()).skip(1).findFirst().ifPresent(
+                  System.out::println
+          );
 //
 //                Q22. Find the second-highest salary for each job title.
 //
