@@ -12,7 +12,12 @@ public class Example1 {
                 new Person("Bob", 25, 60000.0, "Designer"),
                 new Person("Charlie", 35, 70000.0, "Manager"),
                 new Person("David", 28, 55000.0, "Engineer"),
-                new Person("Eve", 32, 65000.0, "Designer")
+                new Person("Eve", 32, 65000.0, "Designer"),
+
+                new Person("Frank", 40, 80000.0, "Manager"),
+                new Person("Grace", 29, 75000.0, "Engineer"),
+                new Person("Helen", 27, 70000.0, "Designer"),
+                new Person("Ivy", 31, 85000.0, "Manager")
         );
 
         /**
@@ -134,21 +139,42 @@ public class Example1 {
 
         double averageSalry = persons.stream().mapToDouble(Person::salary).average().orElse(0);
         persons.stream().filter(person -> person.salary()>averageSalry).forEach(System.out::println);
-//
-//🔥 Advanced Interview Questions
-//
+
+        //🔥 Advanced Interview Questions
 //        Q21. Find the second-highest-paid person in the entire list.
 
           persons.stream().sorted(Comparator.comparingDouble(Person::salary).reversed()).skip(1).findFirst().ifPresent(
                   System.out::println
           );
-//
-//                Q22. Find the second-highest salary for each job title.
-//
-//                Q23. Find the job title having the highest average salary.
+
+//        Q22. Find the second-highest salary for each job title.
+        Map<String, Optional<Double>> collect3 = persons.stream().collect(Collectors.groupingBy(Person::jobTitle,
+                Collectors.collectingAndThen(Collectors.toList(),
+                list -> list.stream()
+                        .map(Person::salary)
+                        .distinct()
+                        .sorted(Comparator.reverseOrder()).skip(1).findFirst())));
+                collect3.forEach((job,salary)-> System.out.println(job+" -> "+salary));
+
+//               Q23. Find the job title having the highest average salary.
+        Map.Entry<String, Double> result =
+                persons.stream()
+                        .collect(Collectors.groupingBy(
+                                Person::jobTitle,
+                                Collectors.averagingDouble(Person::salary)
+                        ))
+                        .entrySet()
+                        .stream()
+                        .max(Map.Entry.comparingByValue())
+                        .orElseThrow();
+
+        System.out.println(result.getKey() + " -> " + result.getValue());
 //
 //        Q24. Find the youngest person among people earning more than ₹60,000.
-//
+        persons.stream()
+                .filter(person -> person.salary() > 60000.0)
+                .min(Comparator.comparingInt(Person::age))
+                .ifPresent(System.out::println);
 //        Q25. Find the top 3 highest-paid persons.
 //
 //                Q26. Find the top 2 highest-paid persons from each job title.
