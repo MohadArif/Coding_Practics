@@ -176,13 +176,48 @@ public class Example1 {
                 .min(Comparator.comparingInt(Person::age))
                 .ifPresent(System.out::println);
 //        Q25. Find the top 3 highest-paid persons.
-//
+        List<Person> personList = persons.stream().sorted(Comparator.comparingDouble(Person::salary).reversed()).toList();
+        for (int i=0;i<=2;i++){
+            System.out.println(personList.get(i));
+        }
+
+        /**
+         * better approch use limit()
+         */
+
+        persons.stream().sorted(Comparator.comparingDouble(Person::salary).reversed())
+                .limit(3).forEach(System.out::println);
+
 //                Q26. Find the top 2 highest-paid persons from each job title.
-//
+        Map<String, List<Person>> hightPaid = persons.stream()
+                .collect(Collectors.groupingBy(
+                        Person::jobTitle,
+                        Collectors.collectingAndThen(
+                                Collectors.toList(),
+                                list -> list.stream()
+                                        .sorted(Comparator.comparingDouble(Person::salary).reversed())
+                                        .limit(2)
+                                        .toList()
+                        )
+                ));
+
+        hightPaid.forEach((jobTitle, people) -> {
+            System.out.println(jobTitle + " -> " + people);
+        });
 //                Q27. Find the job title with the maximum number of persons.
-//
+        Map<String, Long> jobTitleCount = persons.stream()
+                .collect(Collectors.groupingBy(
+                        Person::jobTitle,
+                        Collectors.counting()
+                ));
+
+        jobTitleCount.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .ifPresent(System.out::println);
+
 //                Q28. Partition persons into two groups:
-//
+        Map<Boolean, List<Person>> partition = persons.stream().collect(Collectors.partitioningBy(person -> person.salary() >= 60000.0));
+        partition.forEach((key,value)-> System.out.println(key+" "+value));
 //        salary >= ₹60,000
 //        salary < ₹60,000
 //
@@ -192,8 +227,26 @@ public class Example1 {
 //          💯 Real Interview Challenge
 //
 //        Q29. Find the highest-paid person in each job title, but only consider people whose age is greater than 25.
+        persons.stream().filter(p->p.age()>25)
+                .collect(Collectors.groupingBy(Person::jobTitle
+        ,Collectors.collectingAndThen(Collectors.toList(),list->
+                        list.stream().max(Comparator.comparingDouble(Person::salary)))))
+                .forEach((a,b)-> System.out.println(a+ " "+b));
 //
 //        Q30. Find the job title whose employees have the highest average salary, and return the job title and average salary.
+        Map<String, Double> averageSalaryByJob = persons.stream()
+                .collect(Collectors.groupingBy(
+                        Person::jobTitle,
+                        Collectors.averagingDouble(Person::salary)
+                ));
+
+        averageSalaryByJob.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .ifPresent(entry ->
+                        System.out.println(
+                                entry.getKey() + " -> " + entry.getValue()
+                        )
+                );
     }
 }
 
